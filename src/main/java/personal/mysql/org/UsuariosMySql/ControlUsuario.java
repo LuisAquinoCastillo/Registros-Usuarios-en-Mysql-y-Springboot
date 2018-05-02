@@ -1,5 +1,6 @@
 package personal.mysql.org.UsuariosMySql;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,48 @@ public class ControlUsuario {
 
     @Autowired RepositorioUsuarios repoUsuario;
 
+    @CrossOrigin
+    @GetMapping(value = {"/todos"})
+    public  ArrayList<Usuario> todosResgistros(){
+        return (ArrayList<Usuario>)repoUsuario.findAll();
+    }
+
+    @CrossOrigin
+    @PostMapping(value = {"/guardar"})
+    public Estatus guardarJSON(@RequestBody String json){
+        try {
+            ObjectMapper mapper=new ObjectMapper();
+            EquipoString e=mapper.readValue(json,EquipoString.class);
+            //Transformacion de string a fecha
+            SimpleDateFormat formato=new SimpleDateFormat("yyyy-mm-dd");
+            Date fechaNac=formato.parse(e.getFechaNac());
+            //Transformacion de string a boolean
+            boolean estatus=Boolean.parseBoolean(e.getEstatus());
+            //Configuracion de la clase
+            Usuario usuario=new Usuario();
+            usuario.setNombre(e.getNombre());
+            usuario.setApellidoPat(e.getApellidoPat());
+            usuario.setApellidoMat(e.getApellidoMat());
+            usuario.setFechaNac(fechaNac);
+            usuario.setCurp(e.getCurp());
+            usuario.setCalle(e.getCalle());
+            usuario.setNumeroCasa(e.getNumeroCasa());
+            usuario.setColonia(e.getColonia());
+            usuario.setDelegacion(e.getDelegacion());
+            usuario.setEstado(e.getEstado());
+            usuario.setTipoPermiso(e.getTipoPermiso());
+            usuario.setEstatus(estatus);
+            usuario.setTelCasa(e.getTelCasa());
+            usuario.setTelCel(e.getTelCel());
+            repoUsuario.save(usuario);
+        }catch (Exception e){
+            return new Estatus(false,"Error al guardar: "+e);
+        }
+        return new Estatus(true,"Guardado con exito");
+    }
+
+}
+/*
     @CrossOrigin
     @GetMapping(value = {"/todos"},headers = {"Accept=application/json"})
     public  ArrayList<Usuario> todosResgistros(){
@@ -77,5 +120,4 @@ public class ControlUsuario {
             return new Estatus(false,"Error: "+ex);
         }
         return new Estatus(true,"Actualizado con exito");
-    }
-}
+    }*/
